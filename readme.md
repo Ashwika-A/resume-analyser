@@ -3,4 +3,4 @@ technical/soft skills, structure, action verbs, contact details, and
 measurable impact. Built with HTML, CSS, and JavaScript, using rule-based 
 scoring logic to generate personalized improvement suggestions.
 
-🔗 Live demo: https://ashwika-a.github.io/resume-analyser/
+
