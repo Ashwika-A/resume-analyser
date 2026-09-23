@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume Analyzer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #1c1917;
+      --ink2: #57534e;
+      --ink3: #a8a29e;
+      --paper: #fafaf9;
+      --white: #ffffff;
+      --line: #e7e5e4;
+      --accent: #dc2626;
+      --accent2: #16a34a;
+      --warn: #ca8a04;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 60px 20px 80px;
+    }
+
+    header {
+      max-width: 660px;
+      margin: 0 auto 48px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 28px;
+    }
+
+    header h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2.6rem;
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+
+    header h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    header p {
+      font-size: 0.92rem;
+      color: var(--ink2);
+      line-height: 1.6;
+    }
+
+    .main {
+      max-width: 660px;
+      margin: 0 auto;
+    }
+
+    .input-label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--ink3);
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    textarea {
+      width: 100%;
+      height: 200px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--ink);
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 16px;
+      resize: vertical;
+      outline: none;
+      line-height: 1.65;
+      transition: border-color .15s;
+    }
+
+    textarea:focus { border-color: var(--ink); }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      margin-bottom: 48px;
+    }
+
+    .btn-primary {
+      background: var(--ink);
+      color: var(--white);
+      border: none;
+      border-radius: 4px;
+      padding: 11px 22px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-primary:hover { opacity: .8; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--ink2);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 11px 22px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+    .btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+    .hidden { display: none; }
+
+    /* scores */
+    .scores-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+
+    .score-box {
+      background: var(--white);
+      padding: 20px 14px;
+      text-align: center;
+    }
+
+    .score-big {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2.2rem;
+      font-weight: 400;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .score-name {
+      font-size: 0.72rem;
+      color: var(--ink3);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    /* sections */
+    .block {
+      border-top: 1px solid var(--line);
+      padding: 24px 0;
+    }
+
+    .block-title {
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--ink3);
+      margin-bottom: 14px;
+    }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+
+    .tag {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      border-radius: 2px;
+      font-weight: 500;
+    }
+
+    .tag-found { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .tag-miss  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+    .legend-row {
+      font-size: 0.75rem;
+      color: var(--ink3);
+      margin-top: 4px;
+    }
+
+    .tip {
+      font-size: 0.88rem;
+      color: var(--ink2);
+      padding: 9px 0;
+      border-bottom: 1px solid var(--line);
+      line-height: 1.55;
+      display: flex;
+      gap: 10px;
+    }
+    .tip:last-child { border-bottom: none; }
+    .tip::before { content: '—'; color: var(--ink3); flex-shrink: 0; }
+
+    .all-good {
+      font-size: 0.9rem;
+      color: var(--accent2);
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Resume <em>Analyzer</em></h1>
+  <p>Paste your resume below and get an honest breakdown — what's working, what's missing, and what to fix.</p>
+</header>
+
+<div class="main">
+
+  <label class="input-label" for="resumeText">Your resume text</label>
+  <textarea id="resumeText" placeholder="Paste your full resume here. Include your contact info, objective, education, skills, projects, experience — everything."></textarea>
+
+  <div class="btn-row">
+    <button class="btn-primary" onclick="analyze()">Analyze</button>
+    <button class="btn-ghost" onclick="loadSample()">Load sample</button>
+  </div>
+
+  <div id="results" class="hidden">
+    <div class="scores-grid" id="scoreRow"></div>
+    <div id="sectionsOut"></div>
+  </div>
+
+</div>
+
+<script>
+  const SKILLS_TECH = ['java','python','javascript','html','css','sql','react','node','c++','c#','php','swift','kotlin','flutter','django','flask','spring','aws','azure','gcp','docker','kubernetes','git','linux','iot','fpga','matlab','arduino','raspberry','tensorflow','pytorch','machine learning','deep learning','nlp','cloud','api','rest','agile','scrum'];
+  const SKILLS_SOFT = ['communication','teamwork','leadership','problem solving','analytical','adaptable','quick learner','time management','critical thinking'];
+  const ACTION_VERBS = ['built','developed','designed','implemented','created','led','managed','improved','achieved','delivered','deployed','optimized','integrated','analyzed','automated','collaborated','engineered','launched','reduced','increased'];
+  const SECTIONS = ['education','experience','project','skill','certification','internship','objective','summary','achievement','award'];
+
+  function scoreResume(text) {
+    const lower = text.toLowerCase();
+    const wc = lower.split(/\s+/).length;
+
+    const foundTech     = SKILLS_TECH.filter(s => lower.includes(s));
+    const foundSoft     = SKILLS_SOFT.filter(s => lower.includes(s));
+    const foundVerbs    = ACTION_VERBS.filter(v => lower.includes(v));
+    const foundSections = SECTIONS.filter(s => lower.includes(s));
+
+    const hasEmail   = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/.test(lower);
+    const hasPhone   = /(\+?\d[\d\s\-()]{7,})/.test(text);
+    const hasLinkedin= /linkedin/.test(lower);
+    const hasNumbers = /\d+(\s*%|\s*years?|\s*projects?|\s*students?|\s*users?|\s*ms|\s*kb|\s*mb)/.test(lower);
+
+    const skillScore    = Math.min(100, Math.round((foundTech.length/8)*60 + (foundSoft.length/3)*40));
+    const actionScore   = Math.min(100, Math.round((foundVerbs.length/5)*100));
+    const structScore   = Math.min(100, Math.round((foundSections.length/6)*100));
+    const contactScore  = (hasEmail?34:0) + (hasPhone?33:0) + (hasLinkedin?33:0);
+    const lengthScore   = wc<50?20 : wc<150?60 : wc<800?100 : wc<1200?80 : 60;
+    const impactScore   = hasNumbers ? 100 : 30;
+
+    const overall = Math.round(skillScore*.25 + actionScore*.15 + structScore*.2 + contactScore*.15 + lengthScore*.1 + impactScore*.15);
+
+    return { overall, skillScore, actionScore, structScore, contactScore, impactScore,
+             foundTech, foundSoft, foundVerbs, foundSections,
+             hasEmail, hasPhone, hasLinkedin, hasNumbers, wc };
+  }
+
+  function scoreColor(n) {
+    return n >= 75 ? '#15803d' : n >= 50 ? '#ca8a04' : '#b91c1c';
+  }
+
+  function analyze() {
+    const text = document.getElementById('resumeText').value.trim();
+    if (text.length < 30) { alert('Please paste your resume text first.'); return; }
+
+    const r = scoreResume(text);
+
+    // score boxes
+    document.getElementById('scoreRow').innerHTML = `
+      <div class="score-box">
+        <div class="score-big" style="color:${scoreColor(r.overall)}">${r.overall}</div>
+        <div class="score-name">Overall</div>
+      </div>
+      <div class="score-box">
+        <div class="score-big" style="color:${scoreColor(r.skillScore)}">${r.skillScore}</div>
+        <div class="score-name">Skills</div>
+      </div>
+      <div class="score-box">
+        <div class="score-big" style="color:${scoreColor(r.structScore)}">${r.structScore}</div>
+        <div class="score-name">Structure</div>
+      </div>
+      <div class="score-box">
+        <div class="score-big" style="color:${scoreColor(r.contactScore)}">${r.contactScore}</div>
+        <div class="score-name">Contact</div>
+      </div>
+    `;
+
+    let out = '';
+
+    // tech skills
+    const missingTech = SKILLS_TECH.filter(s => !r.foundTech.includes(s)).slice(0, 7);
+    out += `<div class="block">
+      <div class="block-title">Technical skills</div>
+      <div class="tags">
+        ${r.foundTech.length ? r.foundTech.map(s=>`<span class="tag tag-found">${s}</span>`).join('') : '<span style="font-size:.85rem;color:#b91c1c">None detected</span>'}
+        ${missingTech.map(s=>`<span class="tag tag-miss">${s}</span>`).join('')}
+      </div>
+      <div class="legend-row">Green = found in your resume &nbsp;·&nbsp; Red = consider adding</div>
+    </div>`;
+
+    // soft skills
+    out += `<div class="block">
+      <div class="block-title">Soft skills</div>
+      <div class="tags">
+        ${r.foundSoft.length ? r.foundSoft.map(s=>`<span class="tag tag-found">${s}</span>`).join('') : '<span style="font-size:.85rem;color:#b91c1c">None detected — try mentioning a few</span>'}
+      </div>
+    </div>`;
+
+    // tips
+    const tips = [];
+    if (!r.hasEmail)            tips.push('Add your email address');
+    if (!r.hasPhone)            tips.push('Add your phone number');
+    if (!r.hasLinkedin)         tips.push('Add your LinkedIn URL');
+    if (r.foundTech.length < 4) tips.push('List more technical skills — recruiters look for keywords');
+    if (r.foundVerbs.length < 3)tips.push('Use action verbs like "built", "developed", "implemented" to describe your work');
+    if (!r.hasNumbers)          tips.push('Add numbers — "improved speed by 30%", "built system for 200 users" — it shows real impact');
+    if (r.foundSections.length < 4) tips.push('Make sure you have clear sections: Education, Skills, Projects, Experience');
+    if (r.wc < 150)             tips.push('Add more detail to your projects and experience — it looks thin right now');
+    if (r.foundSoft.length < 2) tips.push('Mention soft skills like communication or teamwork somewhere in your resume');
+
+    out += `<div class="block">
+      <div class="block-title">What to fix</div>
+      ${tips.length
+        ? tips.map(t => `<div class="tip">${t}</div>`).join('')
+        : '<p class="all-good">Looks solid — nothing major to fix.</p>'
+      }
+    </div>`;
+
+    document.getElementById('sectionsOut').innerHTML = out;
+    document.getElementById('results').classList.remove('hidden');
+  }
+
+  function loadSample() {
+    document.getElementById('resumeText').value = `Jane Doe
+jane.doe.sample@gmail.com | +91 9876543210 | LinkedIn: janedoe-sample
+
+OBJECTIVE
+Detail-oriented engineering graduate with strong analytical, problem-solving, and communication skills. Quick learner eager to contribute and grow in a dynamic organization.
+
+EDUCATION
+B.E. Electronics and Communication Engineering (2022-26)
+Dr. N.G.P. Institute of Technology, Coimbatore — 8.06 CGPA
+
+SKILLS
+Java, HTML, IoT, Cloud Computing, Networking, FPGA, ThingSpeak, Git
+
+PROJECTS
+Healthcare Monitoring using Line Follower Robot (2024)
+Built a real-time patient data monitoring system using Li-Fi communication.
+
+Real Time Aquarium Monitoring System (2025)
+Developed a cloud-enabled system integrating ThingSpeak for temperature, pH, and oxygen tracking.
+
+FPGA-Based SA-TCN Spectrum Sensing Framework (2026)
+Designed and implemented a machine learning-based spectrum sensing framework. Published IEEE (ICIIET-2025).
+
+INTERNSHIPS
+Communication Navigation Surveillance — Coimbatore Airport (Aug 2024)
+PCB Design Intern — Sunshiv Electronic Solution (Aug 2024)
+
+CERTIFICATIONS
+HackerRank Java Basic, HackerRank Problem Solving, NPTEL Industry 4.0 Elite Silver, IoT Specialization`;
+    analyze();
+  }
+
+  document.getElementById('resumeText').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.ctrlKey) analyze();
+  });
+</script>
+
+</body>
+</html>
